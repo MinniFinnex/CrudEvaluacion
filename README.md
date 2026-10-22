@@ -1,5 +1,5 @@
 # CrudEvaluacion
-Crud evaluacion del parcial
+Crud evaluacion del parcial en la rama **MASTER**
 
 -- Kevin Alexander Rivera Escobar
 -- Juan Josue Irias Roque
