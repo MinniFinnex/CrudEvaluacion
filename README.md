@@ -1,20 +1,20 @@
 # CrudEvaluacion
 Crud evaluacion del parcial
 
-# Sistema de GestiÛn de Tienda (CRUD Multitabla)
-°Bienvenido! Este es un proyecto de escritorio desarrollado en **C# con Windows
+# Sistema de Gesti√≥n de Tienda (CRUD Multitabla)
+¬°Bienvenido! Este es un proyecto de escritorio desarrollado en **C# con Windows
 Forms** utilizando **Visual Studio 2022**. Implementa un sistema CRUD (Crear,
 Leer, Actualizar, Eliminar) completo y multitabla conectado a una base de datos
 local de SQL Server (`.mdf`).
-## CaracterÌsticas del Proyecto
-- **CRUD Completo:** GestiÛn integral de registros (InserciÛn, lectura,
-actualizaciÛn y borrado lÛgico/fÌsico).
+## Caracter√≠sticas del Proyecto
+- **CRUD Completo:** Gesti√≥n integral de registros (Inserci√≥n, lectura,
+actualizaci√≥n y borrado l√≥gico/f√≠sico).
 - **Arquitectura Multitabla:** Manejo de relaciones Uno a Muchos (1:N) entre
-CategorÌas y Productos.
+Categor√≠as y Productos.
 - **ORM Moderno:** Utiliza **Entity Framework Core** para el mapeo de datos,
 eliminando la necesidad de escribir consultas SQL manuales.
 
-- **Interfaz Intuitiva:** Grid din·mico con actualizaciÛn en tiempo real y
+- **Interfaz Intuitiva:** Grid din√°mico con actualizaci√≥n en tiempo real y
 controles autolimpiables.
 ---
 ## Arquitectura de la Base de Datos
@@ -30,7 +30,7 @@ con la siguiente estructura de tablas y dependencias:
  decimal Precio
  int CategoriaId FK
  }
-### Script de CreaciÛn (DDL)
+### Script de Creaci√≥n (DDL)
 -- Tabla: Categorias
 CREATE TABLE [dbo].[Categorias] (
  [Id] INT IDENTITY (1, 1) NOT NULL,
@@ -48,25 +48,25 @@ CREATE TABLE [dbo].[Productos] (
 [dbo].[Categorias] ([Id]) ON DELETE CASCADE
 );
 
-## TecnologÌas y Herramientas Herramientas Utilizadas
-- **Lenguaje:** C# (.NET [Indica tu versiÛn, ej: 8.0])
+## Tecnolog√≠as y Herramientas Herramientas Utilizadas
+- **Lenguaje:** C# (.NET [Indica tu versi√≥n, ej: 8.0])
 - **Entorno:** Visual Studio 2022
-- **TecnologÌa de UI:** Windows Forms (WinForms)
+- **Tecnolog√≠a de UI:** Windows Forms (WinForms)
 - **Base de Datos:** SQL Server Express LocalDB (`.mdf`)
 - **ORM:** Entity Framework Core (Microsoft.EntityFrameworkCore.SqlServer)
 ---
-## Requisitos e InstalaciÛn
-Para clonar y ejecutar esta aplicaciÛn localmente, necesita tener instalado
+## Requisitos e Instalaci√≥n
+Para clonar y ejecutar esta aplicaci√≥n localmente, necesita tener instalado
 **Visual Studio 2022** con la carga de trabajo **Desarrollo de escritorio de
 .NET** y el componente **LocalDB de SQL Server Express**.
 1. **Clone el repositorio:**
- git clone https://github.com[SuUsuarioDeGitHub]/[NombreDeSuRepositorio].git
-2. Abra el archivo de soluciÛn `.sln` en Visual Studio 2022.
-3. Aseg˙rese de restaurar los paquetes NuGet si el IDE no lo hace
-autom·ticamente.
+git clone https://github.com/MinniFinnex/CrudEvaluacion.git
+2. Abra el archivo de soluci√≥n `.sln` en Visual Studio 2022.
+3. Aseg√∫rese de restaurar los paquetes NuGet si el IDE no lo hace
+autom√°ticamente.
 4. Presione `F5` o haga clic en **Iniciar** para ejecutar el proyecto.
-> **Nota sobre la Base de Datos:** El proyecto est· configurado para buscar el
-archivo `TiendaDB.mdf` autom·ticamente en el directorio de salida. Aseg˙rese de
+> **Nota sobre la Base de Datos:** El proyecto est√° configurado para buscar el
+archivo `TiendaDB.mdf` autom√°ticamente en el directorio de salida. Aseg√∫rese de
 que el archivo `.mdf` tenga la propiedad *Copiar en el directorio de salida*
 configurada como *Copiar si es posterior*.
 
