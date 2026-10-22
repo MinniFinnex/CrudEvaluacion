@@ -55,7 +55,7 @@ CREATE TABLE [dbo].[Productos] (
 );
 
 ## Tecnologías y Herramientas Herramientas Utilizadas
-- **Lenguaje:** C# (.NET [Indica tu versión, ej: 8.0])
+- **Lenguaje:** C# (.NET 8.0])
 - **Entorno:** Visual Studio 2022
 - **Tecnología de UI:** Windows Forms (WinForms)
 - **Base de Datos:** SQL Server Express LocalDB (`.mdf`)
