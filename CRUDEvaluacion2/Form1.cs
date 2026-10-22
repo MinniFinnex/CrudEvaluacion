@@ -1,8 +1,6 @@
 using System;
 using System.Data;
-using System.Linq;
 using System.Windows.Forms;
-using Microsoft.EntityFrameworkCore;
 using CRUDEvaluacion2.Models;
 
 namespace CRUDEvaluacion2
@@ -19,6 +17,18 @@ namespace CRUDEvaluacion2
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            if (!TiendaContext.InicializarBaseDeDatos(out string error))
+            {
+                MessageBox.Show(
+                    "No se pudo conectar al servidor MySQL / MariaDB.\n\nDetalle: " + error +
+                    "\n\nAsegúrese de que el servidor MySQL (XAMPP / WAMP / Docker) esté ejecutándose en el puerto 3306.",
+                    "Aviso de Conexión a Base de Datos",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return;
+            }
+
             CargarCategorias();
             CargarProductos();
         }
@@ -26,39 +36,35 @@ namespace CRUDEvaluacion2
         // --- MÉTODOS DE SOPORTE ---
         private void CargarCategorias()
         {
-            if (!_context.Categorias.Any())
+            try
             {
-                _context.Categorias.AddRange(
-                    new Categoria { Nombre = "Electrónica" },
-                    new Categoria { Nombre = "Ropa" },
-                    new Categoria { Nombre = "Hogar" },
-                    new Categoria { Nombre = "Alimentos" }
-                );
-                _context.SaveChanges();
+                var categorias = _context.ObtenerCategorias();
+                cmbCategorias.DataSource = categorias;
+                cmbCategorias.DisplayMember = "Nombre";
+                cmbCategorias.ValueMember = "Id";
             }
-
-            cmbCategorias.DataSource = _context.Categorias.ToList();
-            cmbCategorias.DisplayMember = "Nombre";
-            cmbCategorias.ValueMember = "Id";
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar categorías: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void CargarProductos()
         {
-            var productos = _context.Productos
-                .Include(p => p.Categorias)
-                .Select(p => new
+            try
+            {
+                var dt = _context.ObtenerProductosDataTable();
+                dgvProductos.DataSource = dt;
+
+                if (dgvProductos.Columns["CategoriaId"] != null)
                 {
-                    p.Id,
-                    Producto = p.Nombre,
-                    p.Precio,
-                    Categoria = p.Categorias != null ? p.Categorias.Nombre : "Sin Categoría",
-                    p.CategoriaId
-                }).ToList();
-
-            dgvProductos.DataSource = productos;
-
-            if (dgvProductos.Columns["CategoriaId"] != null)
-                dgvProductos.Columns["CategoriaId"].Visible = false;
+                    dgvProductos.Columns["CategoriaId"].Visible = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar productos: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LimpiarFormulario()
@@ -66,7 +72,9 @@ namespace CRUDEvaluacion2
             txtNombre.Clear();
             txtPrecio.Clear();
             if (cmbCategorias.Items.Count > 0)
+            {
                 cmbCategorias.SelectedIndex = 0;
+            }
             _productoIdSeleccionado = 0;
         }
 
@@ -79,19 +87,23 @@ namespace CRUDEvaluacion2
                 return;
             }
 
-            // CREATE (Guardar un nuevo producto)
             var nuevoProducto = new Producto
             {
                 Nombre = txtNombre.Text.Trim(),
                 Precio = precio,
-                CategoriaId = (int)cmbCategorias.SelectedValue
+                CategoriaId = Convert.ToInt32(cmbCategorias.SelectedValue)
             };
-            _context.Productos.Add(nuevoProducto);
 
-            _context.SaveChanges();
-            CargarProductos();
-            LimpiarFormulario();
-            MessageBox.Show("Producto guardado con éxito.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (_context.InsertarProducto(nuevoProducto, out string error))
+            {
+                CargarProductos();
+                LimpiarFormulario();
+                MessageBox.Show("Producto guardado con éxito.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Error al guardar producto: " + error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnEditar_Click(object sender, EventArgs e)
@@ -108,18 +120,23 @@ namespace CRUDEvaluacion2
                 return;
             }
 
-            // UPDATE (Actualizar producto existente)
-            var productoExistente = _context.Productos.Find(_productoIdSeleccionado);
-            if (productoExistente != null)
+            var productoActualizado = new Producto
             {
-                productoExistente.Nombre = txtNombre.Text.Trim();
-                productoExistente.Precio = precio;
-                productoExistente.CategoriaId = (int)cmbCategorias.SelectedValue;
+                Id = _productoIdSeleccionado,
+                Nombre = txtNombre.Text.Trim(),
+                Precio = precio,
+                CategoriaId = Convert.ToInt32(cmbCategorias.SelectedValue)
+            };
 
-                _context.SaveChanges();
+            if (_context.ActualizarProducto(productoActualizado, out string error))
+            {
                 CargarProductos();
                 LimpiarFormulario();
                 MessageBox.Show("Producto actualizado con éxito.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Error al actualizar producto: " + error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -131,9 +148,9 @@ namespace CRUDEvaluacion2
                 _productoIdSeleccionado = Convert.ToInt32(row.Cells["Id"].Value);
                 txtNombre.Text = row.Cells["Producto"].Value?.ToString() ?? "";
                 txtPrecio.Text = row.Cells["Precio"].Value?.ToString() ?? "";
-                if (row.Cells["CategoriaId"].Value != null)
+                if (row.Cells["CategoriaId"].Value != null && int.TryParse(row.Cells["CategoriaId"].Value.ToString(), out int catId))
                 {
-                    cmbCategorias.SelectedValue = Convert.ToInt32(row.Cells["CategoriaId"].Value);
+                    cmbCategorias.SelectedValue = catId;
                 }
             }
         }
@@ -149,14 +166,15 @@ namespace CRUDEvaluacion2
             var confirm = MessageBox.Show("¿Está seguro de eliminar este producto?", "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
             {
-                var producto = _context.Productos.Find(_productoIdSeleccionado);
-                if (producto != null)
+                if (_context.EliminarProducto(_productoIdSeleccionado, out string error))
                 {
-                    _context.Productos.Remove(producto);
-                    _context.SaveChanges();
                     CargarProductos();
                     LimpiarFormulario();
                     MessageBox.Show("Producto eliminado.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Error al eliminar producto: " + error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -166,7 +184,7 @@ namespace CRUDEvaluacion2
             LimpiarFormulario();
         }
 
-        // --- PASOS 5 Y 6: INFORMES RDLC Y FILTROS DINÁMICOS ---
+        // --- INFORMES RDLC Y FILTROS DINÁMICOS ---
         private void btnReporte_Click(object sender, EventArgs e)
         {
             GenerarReporte(filtroCategoria: false);
@@ -179,39 +197,34 @@ namespace CRUDEvaluacion2
 
         private void GenerarReporte(bool filtroCategoria)
         {
-            var dt = new DataTable("dtProductosReporte");
-            dt.Columns.Add("Id", typeof(int));
-            dt.Columns.Add("Nombre", typeof(string));
-            dt.Columns.Add("Precio", typeof(decimal));
-            dt.Columns.Add("Categoria", typeof(string));
-
-            var query = _context.Productos.Include(p => p.Categorias).AsQueryable();
-            string descripcionFiltro = "Reporte General (Todos los productos registrados)";
-
-            if (filtroCategoria && cmbCategorias.SelectedValue != null && (int)cmbCategorias.SelectedValue > 0)
+            try
             {
-                int catId = (int)cmbCategorias.SelectedValue;
-                query = query.Where(p => p.CategoriaId == catId);
-                var cat = _context.Categorias.Find(catId);
-                descripcionFiltro = $"Filtrado por Categoría: {(cat != null ? cat.Nombre : "Seleccionada")}";
+                int? catId = null;
+                string descripcionFiltro = "Reporte General (Todos los productos registrados)";
+
+                if (filtroCategoria && cmbCategorias.SelectedValue != null && Convert.ToInt32(cmbCategorias.SelectedValue) > 0)
+                {
+                    catId = Convert.ToInt32(cmbCategorias.SelectedValue);
+                    string catNombre = _context.ObtenerNombreCategoria(catId.Value);
+                    descripcionFiltro = $"Filtrado por Categoría: {catNombre}";
+                }
+
+                DataTable dt = _context.ObtenerDatosParaReporte(catId);
+
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("No hay productos que coincidan con la selección para generar el reporte.", "Sin registros", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                using (var formReporte = new FormReporte(dt, descripcionFiltro))
+                {
+                    formReporte.ShowDialog();
+                }
             }
-
-            var lista = query.ToList();
-
-            if (!lista.Any())
+            catch (Exception ex)
             {
-                MessageBox.Show("No hay productos que coincidan con la selección para generar el reporte.", "Sin registros", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            foreach (var prod in lista)
-            {
-                dt.Rows.Add(prod.Id, prod.Nombre, prod.Precio, prod.Categorias != null ? prod.Categorias.Nombre : "Sin Categoría");
-            }
-
-            using (var formReporte = new FormReporte(dt, descripcionFiltro))
-            {
-                formReporte.ShowDialog();
+                MessageBox.Show("Error al generar el reporte: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
