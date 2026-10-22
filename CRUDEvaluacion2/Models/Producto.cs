@@ -1,4 +1,6 @@
-﻿namespace CRUDEvaluacion2.Models
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace CRUDEvaluacion2.Models
 {
     public class Producto
     {
@@ -7,7 +9,8 @@
         public decimal Precio { get; set; }
         public int CategoriaId { get; set; }
 
-        // Propiedades de navegación
+        // Propiedades de navegaci�n
+        [ForeignKey("CategoriaId")]
         public virtual Categoria Categorias { get; set; } = null!;
     }
 }

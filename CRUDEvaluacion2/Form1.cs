@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,9 @@ namespace CRUDEvaluacion2
             {
                 _context.Categorias.AddRange(
                     new Categoria { Nombre = "Electrónica" },
-                    new Categoria { Nombre = "Ropa" }
+                    new Categoria { Nombre = "Ropa" },
+                    new Categoria { Nombre = "Hogar" },
+                    new Categoria { Nombre = "Alimentos" }
                 );
                 _context.SaveChanges();
             }
@@ -48,7 +51,7 @@ namespace CRUDEvaluacion2
                     p.Id,
                     Producto = p.Nombre,
                     p.Precio,
-                    Categoria = p.Categorias.Nombre,
+                    Categoria = p.Categorias != null ? p.Categorias.Nombre : "Sin Categoría",
                     p.CategoriaId
                 }).ToList();
 
@@ -62,24 +65,24 @@ namespace CRUDEvaluacion2
         {
             txtNombre.Clear();
             txtPrecio.Clear();
-            cmbCategorias.SelectedIndex = -1;
-            cmbCategorias.Text = string.Empty; // Fuerza a limpiar el texto visual del ComboBox
+            if (cmbCategorias.Items.Count > 0)
+                cmbCategorias.SelectedIndex = 0;
             _productoIdSeleccionado = 0;
         }
 
         // --- ACCIONES CRUD ---
         private void btnGuardar_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtNombre.Text) || !decimal.TryParse(txtPrecio.Text, out decimal precio))
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) || !decimal.TryParse(txtPrecio.Text, out decimal precio) || cmbCategorias.SelectedValue == null)
             {
-                MessageBox.Show("Por favor, rellene los campos correctamente.");
+                MessageBox.Show("Por favor, rellene los campos correctamente (Nombre, Precio numérico y Categoría).", "Campos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             // CREATE (Guardar un nuevo producto)
             var nuevoProducto = new Producto
             {
-                Nombre = txtNombre.Text,
+                Nombre = txtNombre.Text.Trim(),
                 Precio = precio,
                 CategoriaId = (int)cmbCategorias.SelectedValue
             };
@@ -88,20 +91,20 @@ namespace CRUDEvaluacion2
             _context.SaveChanges();
             CargarProductos();
             LimpiarFormulario();
-            MessageBox.Show("Producto guardado con éxito.");
+            MessageBox.Show("Producto guardado con éxito.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (_productoIdSeleccionado == 0)
             {
-                MessageBox.Show("Por favor, seleccione un producto de la tabla para editar.");
+                MessageBox.Show("Por favor, seleccione un producto de la tabla para editar.", "Selección requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (string.IsNullOrEmpty(txtNombre.Text) || !decimal.TryParse(txtPrecio.Text, out decimal precio))
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) || !decimal.TryParse(txtPrecio.Text, out decimal precio) || cmbCategorias.SelectedValue == null)
             {
-                MessageBox.Show("Por favor, rellene los campos correctamente.");
+                MessageBox.Show("Por favor, rellene los campos correctamente.", "Campos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -109,26 +112,29 @@ namespace CRUDEvaluacion2
             var productoExistente = _context.Productos.Find(_productoIdSeleccionado);
             if (productoExistente != null)
             {
-                productoExistente.Nombre = txtNombre.Text;
+                productoExistente.Nombre = txtNombre.Text.Trim();
                 productoExistente.Precio = precio;
                 productoExistente.CategoriaId = (int)cmbCategorias.SelectedValue;
 
                 _context.SaveChanges();
                 CargarProductos();
                 LimpiarFormulario();
-                MessageBox.Show("Producto actualizado con éxito.");
+                MessageBox.Show("Producto actualizado con éxito.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private void dgvProductos_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex >= 0 && dgvProductos.Rows[e.RowIndex].Cells["Id"].Value != null)
             {
                 DataGridViewRow row = dgvProductos.Rows[e.RowIndex];
                 _productoIdSeleccionado = Convert.ToInt32(row.Cells["Id"].Value);
-                txtNombre.Text = row.Cells["Producto"].Value.ToString();
-                txtPrecio.Text = row.Cells["Precio"].Value.ToString();
-                cmbCategorias.SelectedValue = Convert.ToInt32(row.Cells["CategoriaId"].Value);
+                txtNombre.Text = row.Cells["Producto"].Value?.ToString() ?? "";
+                txtPrecio.Text = row.Cells["Precio"].Value?.ToString() ?? "";
+                if (row.Cells["CategoriaId"].Value != null)
+                {
+                    cmbCategorias.SelectedValue = Convert.ToInt32(row.Cells["CategoriaId"].Value);
+                }
             }
         }
 
@@ -136,11 +142,11 @@ namespace CRUDEvaluacion2
         {
             if (_productoIdSeleccionado == 0)
             {
-                MessageBox.Show("Seleccione un producto de la lista para eliminar.");
+                MessageBox.Show("Seleccione un producto de la lista para eliminar.", "Selección requerida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var confirm = MessageBox.Show("¿Está seguro de eliminar este producto?", "Confirmar", MessageBoxButtons.YesNo);
+            var confirm = MessageBox.Show("¿Está seguro de eliminar este producto?", "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
             {
                 var producto = _context.Productos.Find(_productoIdSeleccionado);
@@ -150,7 +156,7 @@ namespace CRUDEvaluacion2
                     _context.SaveChanges();
                     CargarProductos();
                     LimpiarFormulario();
-                    MessageBox.Show("Producto eliminado.");
+                    MessageBox.Show("Producto eliminado.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
@@ -158,6 +164,55 @@ namespace CRUDEvaluacion2
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarFormulario();
+        }
+
+        // --- PASOS 5 Y 6: INFORMES RDLC Y FILTROS DINÁMICOS ---
+        private void btnReporte_Click(object sender, EventArgs e)
+        {
+            GenerarReporte(filtroCategoria: false);
+        }
+
+        private void btnReporteFiltrado_Click(object sender, EventArgs e)
+        {
+            GenerarReporte(filtroCategoria: true);
+        }
+
+        private void GenerarReporte(bool filtroCategoria)
+        {
+            var dt = new DataTable("dtProductosReporte");
+            dt.Columns.Add("Id", typeof(int));
+            dt.Columns.Add("Nombre", typeof(string));
+            dt.Columns.Add("Precio", typeof(decimal));
+            dt.Columns.Add("Categoria", typeof(string));
+
+            var query = _context.Productos.Include(p => p.Categorias).AsQueryable();
+            string descripcionFiltro = "Reporte General (Todos los productos registrados)";
+
+            if (filtroCategoria && cmbCategorias.SelectedValue != null && (int)cmbCategorias.SelectedValue > 0)
+            {
+                int catId = (int)cmbCategorias.SelectedValue;
+                query = query.Where(p => p.CategoriaId == catId);
+                var cat = _context.Categorias.Find(catId);
+                descripcionFiltro = $"Filtrado por Categoría: {(cat != null ? cat.Nombre : "Seleccionada")}";
+            }
+
+            var lista = query.ToList();
+
+            if (!lista.Any())
+            {
+                MessageBox.Show("No hay productos que coincidan con la selección para generar el reporte.", "Sin registros", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            foreach (var prod in lista)
+            {
+                dt.Rows.Add(prod.Id, prod.Nombre, prod.Precio, prod.Categorias != null ? prod.Categorias.Nombre : "Sin Categoría");
+            }
+
+            using (var formReporte = new FormReporte(dt, descripcionFiltro))
+            {
+                formReporte.ShowDialog();
+            }
         }
     }
 }

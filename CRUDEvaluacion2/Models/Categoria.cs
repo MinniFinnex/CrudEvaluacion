@@ -1,13 +1,13 @@
-ï»¿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace CRUDEvaluacion2.Models
 {
     public class Categoria
     {
         public int Id { get; set; }
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = null!;
 
-        // Debe ser Producto en singular dentro de los corchetes angulares
-        public ICollection<Producto> Productos { get; set; }
+        // Propiedad de navegación
+        public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
     }
 }

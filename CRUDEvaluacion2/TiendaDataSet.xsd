@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema id="TiendaDataSet"
+                  targetNamespace="http://tempuri.org/TiendaDataSet.xsd"
+                  elementFormDefault="qualified"
+                  attributeFormDefault="qualified"
+                  xmlns="http://tempuri.org/TiendaDataSet.xsd"
+                  xmlns:mstns="http://tempuri.org/TiendaDataSet.xsd"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                  xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                  xmlns:msprop="urn:schemas-microsoft-com:xml-msprop">
+  <xs:element name="TiendaDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="dtProductosReporte">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Id" type="xs:int" minOccurs="0" />
+              <xs:element name="Nombre" type="xs:string" minOccurs="0" />
+              <xs:element name="Precio" type="xs:decimal" minOccurs="0" />
+              <xs:element name="Categoria" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
