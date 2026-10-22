@@ -1,6 +1,6 @@
 # CrudEvaluacion - Sistema de Gestión de Tienda (CRUD Multitabla)
 
-> **Nota importante:** El código fuente funcional y actualizado se encuentra en la rama [`master`](https://github.com/MinniFinnex/CrudEvaluacion/tree/master).
+ El código fuente funcional y actualizado se encuentra en la rama [`master`](https://github.com/MinniFinnex/CrudEvaluacion/tree/master).
 
 ---
 
