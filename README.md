@@ -1,6 +1,12 @@
 # CrudEvaluacion
 Crud evaluacion del parcial
 
+-- Kevin Alexander Rivera Escobar
+-- Juan Josue Irias Roque
+-- Elias Caleb Rivera 
+-- Josue David Flores Martinez
+
+
 # Sistema de Gestión de Tienda (CRUD Multitabla)
 ¡Bienvenido! Este es un proyecto de escritorio desarrollado en **C# con Windows
 Forms** utilizando **Visual Studio 2022**. Implementa un sistema CRUD (Crear,
