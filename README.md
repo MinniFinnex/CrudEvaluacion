@@ -12,13 +12,13 @@
 
 ---
 
-## 📌 Descripción del Proyecto
+##  Descripción del Proyecto
 
 Sistema de escritorio desarrollado en **C# / Windows Forms** bajo la plataforma **.NET 8.0** en **Visual Studio 2022**. Implementa una solución integral para operaciones CRUD (Crear, Leer, Actualizar y Eliminar) con arquitectura relacional multitabla (1:N) entre **Categorías** y **Productos**, conectada a un servidor relacional **MySQL / MariaDB** mediante el conector **`MySql.Data`**, además de incorporar un módulo de generación y exportación de reportes dinámicos en formato PDF con **Microsoft Reporting Services (RDLC)**.
 
 ---
 
-## ✨ Características Principales
+##  Características Principales
 
 * **CRUD Completo:** Inserción, lectura en DataGridView interactivo, edición y eliminación de registros.
 * **Arquitectura Multitabla (1:N):** Relación de clave foránea entre Categorías y Productos con cascada referencial.
@@ -43,7 +43,7 @@ Sistema de escritorio desarrollado en **C# / Windows Forms** bajo la plataforma 
 
 ---
 
-## 🗄️ Arquitectura y Estructura de la Base de Datos
+##  Arquitectura y Estructura de la Base de Datos
 
 El sistema trabaja sobre la base de datos relacional `TiendaDB`:
 
@@ -90,7 +90,7 @@ INSERT INTO Categorias (Nombre) VALUES
 
 ---
 
-## 🚀 Requisitos e Instalación
+##  Requisitos e Instalación
 
 Para clonar, compilar y ejecutar este proyecto localmente:
 
